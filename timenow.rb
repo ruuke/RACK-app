@@ -7,8 +7,7 @@ class TimeNow
     @time = []
     @error = []
     @set_status
-    @set_body
-    self.parse
+    @set_body    
   end
 
   def parse
@@ -23,13 +22,13 @@ class TimeNow
           @error << option
         end
       end
-    else
-      @set_status = 404
+    else      
       return
     end
 
     @error.empty? ? self.set_status = 200 : @set_status = 400
     @error.empty? ? @set_body = @time.join('-') : @set_body = "Unknown time format #{@error}"
+    [self.set_status, self.set_body]
   end
   
 end
