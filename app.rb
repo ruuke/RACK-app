@@ -1,22 +1,36 @@
 class App
 
   def call(env)
-    @time = TimeNow.new(env).parse
-    [status, headers, body]
+    perform_response(env)
   end
 
   private
 
-  def status
-    @time.is_a?(NilClass) ? 404 : @time[0]
+  def perform_response(env)
+    rack = Rack::Request.new(env)
+
+    path  = rack.path
+    rack_params = rack.params['format']
+
+    if path != '/time' || rack_params.nil?
+      return [404, headers, ['404']]
+    end
+
+    formatter = TimeFormatter.new(rack_params)
+    if formatter.valid?
+      body = formatter.time
+      status = 200
+    else
+      invalid_params = formatter.invalid_params
+      body = "Unknown time format #{invalid_params}"
+      status = 400
+    end
+    [status, headers, [body]]
+
   end
 
   def headers
-    { 'Content-Type' => 'text/plain' }
-  end
-
-  def body
-   @time.is_a?(NilClass) ? [ ] : [ "#{@time[1]}\n" ]
+    { 'Content-Type' => 'text/plain'}
   end
 
 end
