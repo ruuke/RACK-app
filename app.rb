@@ -1,3 +1,5 @@
+require_relative 'time_formatter'
+
 class App
 
   def call(env)
@@ -7,16 +9,18 @@ class App
   private
 
   def perform_response(env)
-    rack = Rack::Request.new(env)
+    request = Rack::Request.new(env)
 
-    path  = rack.path
-    rack_params = rack.params['format']
+    path  = request.path
+    request_params = request.params['format']
 
-    if path != '/time' || rack_params.nil?
-      return [404, headers, ['404']]
+    if path != '/time'
+      return [404, headers, ["404\n"]]
+    elsif request_params.nil?
+      return [400, headers, ["invalid_format_name\n"]]
     end
 
-    formatter = TimeFormatter.new(rack_params)
+    formatter = TimeFormatter.new(request_params)
     if formatter.valid?
       body = formatter.time
       status = 200
@@ -25,7 +29,7 @@ class App
       body = "Unknown time format #{invalid_params}"
       status = 400
     end
-    [status, headers, [body]]
+    [status, headers, ["#{body}\n"]]
 
   end
 
